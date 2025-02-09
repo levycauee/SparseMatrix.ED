@@ -1,125 +1,145 @@
 #ifndef MATRIX_H
 #define MATRIX_H
-// Diretivas de pré-processador para evitar múltiplas inclusões do mesmo arquivo.
 
-#include <stdexcept>
-#include <iostream>
-// Inclui bibliotecas para exceções e entrada/saída.
+#include <stdexcept> //exceções
+#include <iostream>  //entrada/saida
 
-
-// Estrutura que representa um nó da matriz esparsa.
+// REPRESENTA UM NÓ DENTRO DA NOSSA MATRIX
 struct Node {
-  Node *direita;  // Ponteiro para o próximo nó à direita.
-  Node *abaixo;   // Ponteiro para o próximo nó abaixo.
-  int linha;      // Índice da linha do nó.
-  int coluna;     // Índice da coluna do nó.
-  double valor;   // Valor armazenado no nó.
+  Node *direita;  //ponteiro para o próximo nó à direita, ou seja, avança para a próxima coluna.
+  Node *abaixo;   //ponteiro para o próximo nó abaixo, ou seja, vai para a próxima linha.
+  int linha;      //indice da linha do nó
+  int coluna;     //indice da coluna do nó.
+  double valor;   //valor armazenado no nó.
 
-  Node() = default; // Construtor padrão do nó.
 };
 
-// Classe que representa uma matriz esparsa.
+//classe que representa uma matriz esparsa.
 class SparseMatrix {
-  // Node é uma struct que representa um nó da matriz esparsa.
+  
 private:
-  int n; // Número de colunas da matriz.
-  int m; // Número de linhas da matriz.
+  int LINHAS_M; //numero de linhas da matriz.
+  int COLUNAS_M; //numero de colunas da matriz.
 
 public:
-  Node *head; // Ponteiro para o primeiro nó da matriz.
+  Node* m_head; //ponteiro para o primeiro nó da matriz.
 
-  // Construtor padrão.
+  //construtor padrão.
   SparseMatrix() {
-    this->head = nullptr; // Inicializa a cabeça da lista como nula.
-    this->n = 0;          // Inicializa o número de colunas como 0.
-    this->m = 0;          // Inicializa o número de linhas como 0.
+    this->m_head = nullptr; // inicializa o primeiro nó da lista como nullptr
+    this->LINHAS_M = 0;     // inicializa o número de linhas como 0
+    this->COLUNAS_M = 0;    // inicializa o número de colunas como 0
+
   }
 
-  // Construtor de cópia.
-  SparseMatrix(const SparseMatrix& matrix) {
-    this->m = matrix.m; // Copia o número de linhas.
-    this->n = matrix.n; // Copia o número de colunas.
-    this->head = nullptr; // Inicializa a cabeça da lista como nula.
+  // Construtor de cópia: cria uma nova matriz copiando outra já existente
+  SparseMatrix(const SparseMatrix& matriz) {
+    this->LINHAS_M = matriz.LINHAS_M; // copia a quantidade de linhas da matriz passada
 
-    // Copia os nós da matriz original para a nova matriz.
-    Node* atual = matrix.head;
-    while (atual != nullptr) {
-      this->insert(atual->linha, atual->coluna, atual->valor);
-      atual = atual->abaixo;
+    this->COLUNAS_M = matriz.COLUNAS_M; //copia a quantidade de colunas da matriz passada
+
+    this->m_head = nullptr; //começa com a matriz vazia, sem nós
+
+    //agora, percorremos a matriz original para copiar os nós
+    Node* atual = matriz.m_head; //começa pelo primeiro nó da matriz original
+    while (atual != nullptr) { //enquanto houver nós para copiar...
+        this->insert(atual->linha, atual->coluna, atual->valor); //insere o nó na nova matriz que será a copia da que a gente passou, é claro
+        atual = atual->abaixo; //vai para o próximo nó na lista (depois volta pra condição do while)
     }
-  }
+}
 
-  // Construtor com parâmetros.
-  SparseMatrix(int linhas, int colunas) {
+
+  //construtor padrao com parametros
+  SparseMatrix (int linhas, int colunas) {
     // Inicializa a matriz esparsa com o número de linhas e colunas especificado.
-    this->head = nullptr;
-    this->m = linhas;
-    this->n = colunas;
+    this->m_head = nullptr;
+    this->LINHAS_M = linhas;
+    this->COLUNAS_M = colunas;
   }
 
-  // Destrutor padrão.
+  
+  // ∼SparseMatrix();
+  // Destrutor. Libera toda a memória que foi alocada dinamicamente para a matriz
   ~SparseMatrix() {
-    // Libera a memória alocada para os nós da matriz.
-    Node* atual = head;
-    while (atual != nullptr) {
-      Node* temp = atual;
-      atual = atual->abaixo;
-      delete temp;
-    }
-    head = nullptr; // Define a cabeça da lista como nula.
-  }
+    while (m_head != nullptr) { //enquanto houver linhas na matriz
+        Node* linhaAtual = m_head; //começa pela primeira linha
+        m_head = m_head->abaixo; //move a cabeça para a próxima linha
 
-  // Método que insere um valor na matriz esparsa.
+        //percorre e libera todos os nós da linha atual
+        while (linhaAtual != nullptr) {
+            Node* temp = linhaAtual;
+            linhaAtual = linhaAtual->direita; //move para o próximo nó na linha
+            delete temp; //libera a memória do nó atual
+        }
+    }
+}
+
+
+
+// void insert(int i, int j, double value);
+// Esta função-membro faz o valor na célula (i, j) da matriz ser igual a 'value',
+// onde 'i' é a linha e 'j' é a coluna. Se já houver um valor nessa posição,
+// ele é atualizado para esse novo valor. A função deve checar se os índices 'i' e 'j'
+// passados por parâmetro são válidos; se não forem, uma exceção deve ser lançada.
+// Atenção: No caso em que o valor do argumento 'value' for igual a zero,
+// a função deve desconsiderar e não fazer nada neste caso. Ou seja,
+// chamadas dessa função passando o valor 0 não terão efeito algum.
   void insert(int i, int j, double value) {
-    // Validação dos índices.
-    if (i < 1 || j < 1 || i > this->n || j > this->m) {
-      throw std::out_of_range("Índices fora do intervalo válido!");
-    }
 
-    // Ignorar valores iguais a 0.
+    //ignorar valores iguais a 0.
     if (value == 0) {
       return;
     }
 
-    // Inserir ou atualizar o valor na matriz esparsa.
-    Node* atual = head;
+    //verificação dos índices
+    if (i < 1 || j < 1 || i > this->LINHAS_M || j > this->COLUNAS_M) {
+      throw std::out_of_range("Índices fora do intervalo válido!");
+    }
+
+
+    //inserir ou atualizar o valor na matriz esparsa
+    Node* atual = m_head;
     Node* anterior = nullptr;
 
-    // Percorre a lista para encontrar a posição correta para inserir o novo nó.
+    //percorre a lista para encontrar a posição correta para inserir o novo nó
     while (atual != nullptr && (atual->linha < i || (atual->linha == i && atual->coluna < j))) {
       anterior = atual;
       atual = atual->abaixo;
     }
 
-    // Se o nó já existe, atualiza o valor.
+    //se o nó já existe, atualiza o valor
     if (atual != nullptr && atual->linha == i && atual->coluna == j) {
       atual->valor = value;
     } else {
-      // Caso contrário, insere um novo nó.
+      //caso contrário, insere um novo nó
       Node* novoNo = new Node();
       novoNo->linha = i;
       novoNo->coluna = j;
       novoNo->valor = value;
       novoNo->abaixo = atual;
 
-      // Ajusta os ponteiros para manter a lista ordenada.
+      //ajusta os ponteiros para manter a lista ordenada
       if (anterior == nullptr) {
-        head = novoNo;
+        m_head = novoNo;
       } else {
         anterior->abaixo = novoNo;
       }
     }
   }
 
-  // Método que retorna o elemento na posição (i, j).
+
+  // double get(int i, int j);
+  // Devolve o valor na célula (i, j) da matriz, onde 'i' é a linha e 'j' é a coluna.
+  // A função deve checar se os índices passados são válidos; se não forem válidos,
+  // uma exceção deve ser lançada.
   double get(int i, int j) {
-    // Validação dos índices.
-    if (i < 1 || j < 1 || i > this->n || j > this->m) {
+    //alidação dos índices
+    if (i < 1 || j < 1 || i > this->LINHAS_M || j > this->COLUNAS_M) {
       throw std::out_of_range("Índices fora do intervalo válido!");
     }
 
     // Buscar o valor na matriz esparsa.
-    Node* atual = head;
+    Node* atual = m_head;
 
     // Percorre a lista para encontrar o nó com os índices (i, j).
     while (atual != nullptr) {
@@ -137,128 +157,112 @@ public:
     return 0;
   }
 
-  // Método que imprime a matriz esparsa.
+  // void print();
+  // Esta função imprime a matriz A no terminal, inclusive os elementos iguais a zero.
   void print() {
-    // Imprime todos os elementos, inclusive zeros.
-    for (int i = 1; i <= this->m; i++) {
-      for (int j = 1; j <= this->n; j++) {
+    //imprime todos os elementos, inclusive zeros.
+    for (int i = 1; i <= this->LINHAS_M; i++) {
+      for (int j = 1; j <= this->COLUNAS_M; j++) {
         std::cout << get(i, j) << " ";
       }
       std::cout << std::endl;
     }
   }
 
-  // Método que redimensiona a matriz esparsa.
-  void resize(int linhas, int colunas) {
-    // Libera a memória alocada para os nós da matriz.
-    Node* atual = head;
-    while (atual != nullptr) {
-      Node* temp = atual;
-      atual = atual->abaixo;
-      delete temp;
-    }
-
-    // Redefine a cabeça da lista e as dimensões da matriz.
-    this->head = nullptr;
-    this->m = linhas;
-    this->n = colunas;
-  }
-
-  // Método que remove todos os elementos da matriz.
+  //método que remove todos os elementos da matriz
   void clear() {
-    // Libera a memória alocada para os nós da matriz.
-    Node* atual = head;
+    //libera a memória alocada para os nós da matriz
+    //também libera os nós, consequentemente apaga os valores
+    //isso a gente vai usar muito eu acho
+    Node* atual = m_head;
     while (atual != nullptr) {
       Node* temp = atual;
       atual = atual->abaixo;
       delete temp;
     }
-    head = nullptr; // Define a cabeça da lista como nula.
+    m_head = nullptr; //define a cabeça da lista como nula
   }
 
-  // Sobrecarga do operador de multiplicação.
-  SparseMatrix operator*(SparseMatrix& matrix) {
-    // Verifica se as dimensões são compatíveis para multiplicação.
-    if (this->n != matrix.m) {
-      throw std::out_of_range("Não foi possível multiplicar: dimensões incompatíveis!");
+  //método que redimensiona a matriz esparsa
+  //usamos para garantir que a matriz que a gente redimensionar
+  //tenha memoria suficiente para as linhas e colunas que
+  //o usuario colocar em uma matrizX
+  //(Usamos apenas na função de leitura) por que
+  //sempre retornava a exceção de linhas e colunas
+  void redimensionar(int linhas, int colunas) {
+    //libera a memória alocada para os nós da matriz
+    //copiei e colei o clear praticamente
+    Node* atual = m_head;
+    while (atual != nullptr) {
+      Node* temp = atual;
+      atual = atual->abaixo;
+      delete temp;
     }
 
-    // Cria uma nova matriz para armazenar o resultado.
-    SparseMatrix result(this->m, matrix.n);
+    //seta novamente a cabeça da lista e as dimensões da matriz como padrão
+    //ou seja, só está liberando memória de acordo com a entrada do usuário
+    this->m_head = nullptr;
+    this->LINHAS_M = linhas;
+    this->COLUNAS_M = colunas;
+  }
 
-    // Variável auxiliar para armazenar o valor acumulado de cada elemento da matriz resultado.
-    double a;
+  
 
-    // Calcula o produto das matrizes.
-    for (int i = 1; i <= this->m; i++) {
-      for (int j = 1; j <= matrix.n; j++) {
-        a = 0.0;
+  // Sobrecarga do operador de multiplicação *
+  SparseMatrix operator*(SparseMatrix& matriz) {
+    //verifica se as dimensões são compatíveis para multiplicação
+    if (this->COLUNAS_M != matriz.LINHAS_M) {
+      throw std::out_of_range("Não podem ser somadas por conta das dimensões fora do padrão, as colunas de A tem que ser iguais as linhas de B");
+    }
 
-        // Calcula o elemento resultante.
-        for (int k = 1; k <= this->n; k++) {
-          a += this->get(i, k) * matrix.get(k, j);
+    //cria uma nova matriz para armazenar o resultado
+    SparseMatrix novaMatriz(this->LINHAS_M, matriz.COLUNAS_M);
+
+    //variável auxiliar para armazenar o valor acumulado de cada elemento da matriz resultado
+    int valor;
+
+    //calcula o produto das matrizes
+    for (int i = 1; i <= this->LINHAS_M; i++) {
+      for (int j = 1; j <= matriz.COLUNAS_M; j++) {
+        valor = 0.0;
+
+        //calcula o elemento resultante
+        for (int x = 1; x <= this->COLUNAS_M; x++) {
+          valor = valor + (this->get(i, x) * matriz.get(x, j));
         }
 
-        // Insere o valor na matriz resultado se for diferente de zero.
-        if (a != 0.0) {
-          result.insert(i, j, a);
+        //insere o valor na novaMatriz se for diferente de zero
+        if (valor != 0.0) {
+          novaMatriz.insert(i, j, valor);
         }
       }
     }
 
-    // Retorna a matriz resultado.
-    return result;
+    //retorna a novaMatriz
+    return novaMatriz;
   }
 
-  // Sobrecarga do operador de adição.
-  SparseMatrix operator+(SparseMatrix& matrix) {
-    // Verifica se as dimensões são compatíveis para adição.
-    if (this->m != matrix.m || this->n != matrix.n) {
-      throw std::out_of_range("Não foi possível somar: dimensões incompatíveis!");
+  //sobrecarga do operador de adição +
+  SparseMatrix operator+(SparseMatrix& matriz) {
+    //verifica se a conta pode ser feita ou não
+    if (this->LINHAS_M != matriz.LINHAS_M || this->COLUNAS_M != matriz.COLUNAS_M) {
+      throw std::out_of_range("Não podem ser somadas por conta das dimensões fora do padrão.");
     }
 
-    // Cria uma nova matriz para armazenar o resultado.
-    SparseMatrix result(this->m, this->n);
+    //cria uma nova matriz C para armazenar o resultado.
+    SparseMatrix novaMatriz(this->LINHAS_M, this->COLUNAS_M);
 
-    // Calcula a soma das matrizes.
-    for (int i = 1; i <= this->m; i++) {
-      for (int j = 1; j <= this->n; j++) {
-        result.insert(i, j, this->get(i, j) + matrix.get(i, j));
+    //calcula a soma das matrizes
+    for (int i = 1; i <= this->LINHAS_M; i++) {
+      for (int j = 1; j <= this->COLUNAS_M; j++) {
+        novaMatriz.insert(i, j, this->get(i, j) + matriz.get(i, j));
       }
     }
 
-    // Retorna a matriz resultado.
-    return result;
+    //retorna a novaMatriz 
+    return novaMatriz;
   }
 
-  // Sobrecarga do operador de atribuição.
-  SparseMatrix operator=(const SparseMatrix& matrix) {
-    // Verifica se não é uma auto-atribuição.
-    if (this != &matrix) {
-      // Limpa a memória do objeto atual.
-      Node* atual = head;
-      while (atual != nullptr) {
-        Node* temp = atual;
-        atual = atual->abaixo;
-        delete temp;
-      }
-
-      // Copia os atributos básicos.
-      this->m = matrix.m;
-      this->n = matrix.n;
-      this->head = nullptr;
-
-      // Copia os nós da matriz esparsa.
-      Node* outroAtual = matrix.head;
-      while (outroAtual != nullptr) {
-        this->insert(outroAtual->linha, outroAtual->coluna, outroAtual->valor);
-        outroAtual = outroAtual->abaixo;
-      }
-    }
-
-    // Retorna o objeto atual.
-    return *this;
-  }
 };
 
 #endif
