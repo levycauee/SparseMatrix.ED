@@ -4,7 +4,7 @@
 #include <stdexcept> //exceções
 #include <iostream>  //entrada/saida
 
-// REPRESENTA UM NÓ DENTRO DA NOSSA MATRIX
+//REPRESENTA UM NÓ DENTRO DA NOSSA MATRIX
 struct Node {
   Node *direita;  //ponteiro para o próximo nó à direita, ou seja, avança para a próxima coluna.
   Node *abaixo;   //ponteiro para o próximo nó abaixo, ou seja, vai para a próxima linha.
