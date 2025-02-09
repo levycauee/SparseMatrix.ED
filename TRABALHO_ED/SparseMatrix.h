@@ -1,5 +1,5 @@
-#ifndef MATRIX_H
-#define MATRIX_H
+#ifndef SPARSEMATRIX_H
+#define SPARSEMATRIX_H
 
 #include <stdexcept> //exceções
 #include <iostream>  //entrada/saida
