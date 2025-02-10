@@ -1,17 +1,23 @@
+/*
+    Curso: Ciência da Computação;
+    Turma: SEG/TER 8:00 ás 10:00;
+    Alunos: Mylena Vieira Araújo - 571791;
+            Levy Cauê Rodrigues Nascimento - 567546;
+*/
+
 #ifndef SPARSEMATRIX_H
 #define SPARSEMATRIX_H
 
 #include <stdexcept> //exceções
 #include <iostream>  //entrada/saida
 
-//REPRESENTA UM NÓ DENTRO DA NOSSA MATRIX
+// REPRESENTA UM NÓ DENTRO DA NOSSA MATRIX
 struct Node {
-  Node *direita;  //ponteiro para o próximo nó à direita, ou seja, avança para a próxima coluna.
-  Node *abaixo;   //ponteiro para o próximo nó abaixo, ou seja, vai para a próxima linha.
+  Node *direita;  //ponteiro para o próximo nó à direita (na mesma linha), ou seja, avança para a próxima coluna.
+  Node *abaixo;   //ponteiro para o próximo nó abaixo(na mesma coluna), ou seja, vai para a próxima linha.
   int linha;      //indice da linha do nó
   int coluna;     //indice da coluna do nó.
   double valor;   //valor armazenado no nó.
-
 };
 
 //classe que representa uma matriz esparsa.
